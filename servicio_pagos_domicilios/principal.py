@@ -1,7 +1,11 @@
 from fastapi import FastAPI
-from servicio_pagos_domicilios.rutas.rutas_pago import enrutador as enrutador_pagos
-from servicio_pagos_domicilios.rutas.rutas_domicilio import enrutador as enrutador_domicilios
+from base_datos import engine, Base
+import modelos.tablas
 
-app = FastAPI(title="Servicio de Pagos y Domicilios")
-app.include_router(enrutador_pagos)
-app.include_router(enrutador_domicilios)
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Servicio Pagos y Domicilios")
+
+@app.get("/")
+def inicio():
+    return {"mensaje": "Servicio de Pagos y Domicilios activo"}
