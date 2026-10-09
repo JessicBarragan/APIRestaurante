@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bd_restaurante
+    ports:
+      - "5432:5432"
+
+  servicio_autenticacion:
+    build: ./servicio_autenticacion
+    ports:
+      - "4004:8000"
+    depends_on:
+      - db
+
+  servicio_clientes_productos:
+    build: ./servicio_clientes_productos
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+
+  servicio_pagos_domicilios:
+    build: ./servicio_pagos_domicilios
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - servicio_autenticacion
+      - servicio_clientes_productos
+      - servicio_pagos_domicilios
