@@ -1,55 +1,58 @@
-from fastapi import FastAPI, Request, Response, HTTPException
-from fastapi.responses import JSONResponse
 import httpx
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
 
 app = FastAPI(title="API Gateway - Restaurante & Cafetería")
 
-# Diccionario que le dice al Gateway a qué microservicio
-# (y puerto) debe redirigir cada tipo de petición.
-SERVICES = {
-    "customers": "http://localhost:4001",
-    "products": "http://localhost:4001",
-    "orders": "http://localhost:4002",
-    "inventory": "http://localhost:4002",
-    "payments": "http://localhost:4003",
-    "deliveries": "http://localhost:4003",
+# Nombre de la ruta -> microservicio al que se redirige.
+# Los nombres coinciden con los prefijos reales de cada servicio.
+SERVICIOS = {
+    "clientes": "http://localhost:4001",
+    "productos": "http://localhost:4001",
+    "pedidos": "http://localhost:4002",
+    "inventario": "http://localhost:4002",
+    "pagos": "http://localhost:4003",
+    "domicilios": "http://localhost:4003",
+    "auth": "http://localhost:4004",
 }
+
+# Cabeceras que NO se deben copiar entre peticiones/respuestas
+CABECERAS_IGNORADAS = {"host", "content-length", "content-encoding",
+                       "transfer-encoding", "connection"}
 
 
 @app.get("/")
-async def home():
-    """Ruta simple para comprobar que el Gateway está vivo."""
-    return {"mensaje": "API Gateway del restaurante funcionando 🚀"}
+async def inicio():
+    return {"mensaje": "API Gateway del restaurante funcionando", "servicios": list(SERVICIOS)}
 
 
-@app.api_route("/{service_name}/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def gateway_proxy(service_name: str, path: str, request: Request):
-    if service_name not in SERVICES:
-        raise HTTPException(status_code=404, detail="Servicio no encontrado en el Gateway")
+@app.api_route("/{nombre_servicio}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/{nombre_servicio}/{ruta:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy(nombre_servicio: str, request: Request, ruta: str = ""):
+    if nombre_servicio not in SERVICIOS:
+        return JSONResponse(status_code=404,
+                            content={"detail": f"'{nombre_servicio}' no existe en el Gateway"})
 
-    target_url = f"{SERVICES[service_name]}/{service_name}/{path}"
-
-    client = httpx.AsyncClient()
-    body = await request.body()
+    url_destino = f"{SERVICIOS[nombre_servicio]}/{nombre_servicio}/{ruta}"
+    cabeceras = {k: v for k, v in request.headers.items() if k.lower() not in CABECERAS_IGNORADAS}
+    cuerpo = await request.body()
 
     try:
-        response = await client.request(
-            method=request.method,
-            url=target_url,
-            headers=dict(request.headers),
-            params=dict(request.query_params),
-            content=body,
-            timeout=10.0
-        )
-        return Response(
-            content=response.content,
-            status_code=response.status_code,
-            headers=dict(response.headers)
-        )
+        async with httpx.AsyncClient(timeout=10.0) as cliente:
+            respuesta = await cliente.request(
+                method=request.method,
+                url=url_destino,
+                headers=cabeceras,
+                params=dict(request.query_params),
+                content=cuerpo,
+            )
     except httpx.RequestError as exc:
         return JSONResponse(
             status_code=503,
-            content={"detail": f"El servicio '{service_name}' no está disponible actualmente. Error: {str(exc)}"}
+            content={"detail": f"El servicio '{nombre_servicio}' no está disponible actualmente. Error: {exc}"},
         )
-    finally:
-        await client.aclose()
+
+    cabeceras_respuesta = {k: v for k, v in respuesta.headers.items()
+                           if k.lower() not in CABECERAS_IGNORADAS}
+    return Response(content=respuesta.content, status_code=respuesta.status_code,
+                    headers=cabeceras_respuesta)
