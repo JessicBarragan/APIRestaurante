@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   db:
@@ -10,33 +9,52 @@ services:
       POSTGRES_DB: bd_restaurante
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bd_restaurante"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   servicio_autenticacion:
-    build: ./servicio_autenticacion
+    build:
+      context: ./servicio_autenticacion
     ports:
       - "4004:8000"
+    environment:
+      CLAVE_SECRETA: "clave-de-desarrollo-cambiala"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   servicio_clientes_productos:
-    build: ./servicio_clientes_productos
+    build:
+      context: ./servicio_clientes_productos
     ports:
       - "8001:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   servicio_pagos_domicilios:
-    build: ./servicio_pagos_domicilios
+    build:
+      context: ./servicio_pagos_domicilios
     ports:
       - "8002:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   gateway:
-    build: ./gateway
+    build:
+      context: ./gateway
     ports:
       - "8000:8000"
     depends_on:
       - servicio_autenticacion
       - servicio_clientes_productos
       - servicio_pagos_domicilios
+
+volumes:
+  postgres_data:

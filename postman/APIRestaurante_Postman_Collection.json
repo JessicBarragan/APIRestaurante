@@ -1,0 +1,338 @@
+{
+  "info": {
+    "_postman_id": "c243ff66-9d0e-4f3f-9e07-30f6aefb89f4",
+    "name": "APIRestaurante - Integración Gateway",
+    "description": "Pruebas de integración del Gateway para clientes, productos, pagos, domicilios y autenticación. Base URL por defecto: http://localhost:8000. La secuencia de autenticación registra un correo único, guarda el token de login como variable de colección y lo usa para consultar el perfil.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Gateway - estado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Gateway responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Respuesta en JSON\", function () { pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes - consultar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/clientes/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Clientes responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta es una lista\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clientes - registrar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/clientes/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre_completo\": \"Carlos Mendoza\",\n  \"correo\": \"carlos.mendoza.postman@example.com\",\n  \"telefono\": \"3001234567\",\n  \"direccion\": \"Calle 10 # 5-20\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Registro de cliente responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta incluye el identificador\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos - consultar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/productos/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Productos responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta es una lista\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos - registrar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/productos/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Café Capuchino\",\n  \"categoria\": \"Bebidas Calientes\",\n  \"precio\": 8500,\n  \"descripcion\": \"Café expreso con leche vaporizada\",\n  \"disponible\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Registro de producto responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta incluye el identificador\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagos - consultar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/pagos/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pagos responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta es una lista\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pagos - registrar",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/pagos/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_pedido\": \"pedido-postman-001\",\n  \"monto\": 12500,\n  \"metodo_pago\": \"EFECTIVO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Registro de pago responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta incluye el identificador\", function () { pm.expect(pm.response.json()).to.have.property(\"id\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domicilios - consultar",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/domicilios/"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Domicilios responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"La respuesta es una lista\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación - registrar usuario de prueba",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/registro",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre_completo\": \"Usuario Prueba Integrante 4\",\n  \"correo\": \"{{correo_prueba}}\",\n  \"contrasena\": \"Clave123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"correo_prueba\", \"integrante4-\" + Date.now() + \"@example.com\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Registro responde HTTP 200 o 201\", function () { pm.expect([200, 201]).to.include(pm.response.code); });",
+              "pm.test(\"La respuesta del registro contiene el correo\", function () { pm.expect(pm.response.json().correo).to.eql(pm.collectionVariables.get(\"correo_prueba\")); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación - iniciar sesión",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{correo_prueba}}\",\n  \"contrasena\": \"Clave123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Inicio de sesión responde HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Se devuelve un token Bearer\", function () { var data = pm.response.json(); pm.expect(data.access_token).to.be.a(\"string\").and.not.empty; pm.expect(data.token_type.toLowerCase()).to.eql(\"bearer\"); });",
+              "pm.collectionVariables.set(\"token\", pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Autenticación - consultar perfil con token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/perfil"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Perfil responde HTTP 200 con token\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"El perfil corresponde al usuario de prueba\", function () { pm.expect(pm.response.json().correo).to.eql(pm.collectionVariables.get(\"correo_prueba\")); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correo_prueba",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
