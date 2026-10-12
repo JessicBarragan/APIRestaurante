@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from servicio_pagos_domicilios.modelos.domicilio import CrearDomicilio
+from modelos.domicilio import CrearDomicilio
 
 enrutador = APIRouter(prefix="/domicilios", tags=["Domicilios"])
 base_datos_domicilios = []

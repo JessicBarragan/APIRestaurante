@@ -2,8 +2,8 @@ import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from servicio_autenticacion.modelos.auth import LoginUsuario, RegistroUsuario
-from servicio_autenticacion.seguridad import (
+from modelos.auth import LoginUsuario, RegistroUsuario
+from seguridad import (
     crear_token,
     decodificar_token,
     encriptar_contrasena,
