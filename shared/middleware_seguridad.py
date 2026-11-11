@@ -3,15 +3,26 @@ from typing import List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-SECRET_KEY = "secreto_super_seguro_taller2"
-ALGORITHM = "HS256" 
+# Cargar la llave pública RSA generada en la raíz del proyecto
+PUBLIC_KEY_PATH = "public_key.pem"
+
+try:
+    with open(PUBLIC_KEY_PATH, "rb") as f:
+        PUBLIC_KEY = f.read()
+except FileNotFoundError:
+    # Por si se ejecuta desde otra ruta relativa
+    with open("../public_key.pem", "rb") as f:
+        PUBLIC_KEY = f.read()
+
+ALGORITHM = "RS256" 
 
 seguridad_bearer = HTTPBearer() 
 
 def obtener_usuario_actual(credenciales: HTTPAuthorizationCredentials = Depends(seguridad_bearer)):
     token = credenciales.credentials
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Decodificación utilizando la llave pública y algoritmo RS256
+        payload = jwt.decode(token, PUBLIC_KEY, algorithms=[ALGORITHM])
         usuario: str = payload.get("sub")
         rol: str = payload.get("rol")
         if usuario is None or rol is None:
