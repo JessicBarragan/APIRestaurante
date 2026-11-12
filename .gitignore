@@ -1,4 +1,21 @@
-﻿venv/
+﻿
+# Entornos virtuales
+venv/
+.venv/
+
+# Archivos temporales de Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Variables de entorno y credenciales
 .env
+private_key.pem
+
+# Datos locales
+postgres_data/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
