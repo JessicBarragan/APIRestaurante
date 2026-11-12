@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float
+
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from base_datos import Base
+
 
 class ProductoTabla(Base):
     __tablename__ = "productos"
@@ -8,6 +10,9 @@ class ProductoTabla(Base):
     nombre = Column(String(100), nullable=False)
     precio = Column(Float, nullable=False)
     categoria = Column(String(50), nullable=False)
+    descripcion = Column(String(255), nullable=True)
+    disponible = Column(Boolean, default=True, nullable=False)
+
 
 class ClienteTabla(Base):
     __tablename__ = "clientes"
@@ -16,3 +21,4 @@ class ClienteTabla(Base):
     nombre = Column(String(100), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     telefono = Column(String(30))
+    direccion = Column(String(255))
